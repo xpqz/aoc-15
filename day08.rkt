@@ -6,24 +6,34 @@
 ;;
 ;; Matchsticks
 ;;
-;; Note: in order for the dirty (load ..) hack to work,
-;; the datafile had three extra characters added:
+;; Note: in order for the dirty (load ...) hack to work,
+;; the datafile had two extra lines added:
 ;;
-;; '( ..... )
+;; '(
+;; .....
+;; )
 ;;
 ;; Stefan Kruger
 
 (require math)  ; sum
 
-(define (total-bytes [filename "data/input08.data"])
-  (sum (map bytes-length (file->bytes-lines filename))))
+(define (byte-lines filename)
+  (match (file->bytes-lines filename)
+    [(list _ middle ... _) middle]))
 
-(define (total-string-length [filename "data/input08.data"])
-  (sum (map string-length (load filename))))
+(define (re-encoded-len byte-str)
+  ;; Quotes and backslashes add 2 to the len, plus 2 for the surrounding quotes.
+  (+ 2 (for/fold ([len 0]) ([n (in-bytes byte-str)])
+         (cond
+           [(memq n '(34 92)) (+ len 2)]
+           [else (add1 len)]))))
 
 (define (main)
-  (let ([b (total-bytes)]
-        [s (total-string-length)])
-    (printf "Part1: ~a - ~a = ~a\n" b s (- b s 3))))  ; subtract three extra chars added
+  (let* ([filename "data/input08.data"]
+         [bl (byte-lines filename)]
+         [b (sum (map bytes-length bl))]
+         [s (sum (map string-length (load filename)))]  ; <3 Racket
+         [rel (sum (map re-encoded-len bl))])
+    (printf "Part1: ~a\nPart2: ~a" (- b s) (- rel b))))
 
 (main)
