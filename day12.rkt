@@ -8,6 +8,7 @@
 ;;
 ;; Stefan Kruger
 
+(require math)  ; sum
 (require json)
 
 (define (read-data [filename "data/input12.data"])
