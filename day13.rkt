@@ -21,7 +21,7 @@
               [v (string->number units)]
               [signed-units (if (equal? "gain" gain-or-lose) v (- v))])
          (values
-          (hash-update costs person-pair (λ (_) signed-units) (λ () signed-units))
+          (hash-set costs person-pair signed-units)
           (set-union guests (set person-1 person-2))))])))
 
 (define (couple-cost A B costs)
