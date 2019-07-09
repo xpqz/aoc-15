@@ -8,7 +8,6 @@
 ;;
 ;; Stefan Kruger
 
-(require math)  ; sum
 (require json)
 
 (define (read-data [filename "data/input12.data"])
@@ -23,13 +22,13 @@
 (define (hash-has-value? haystack needle)
   (set-member? (list->set (hash-values haystack)) needle))
 
-(define (remove-red json-data [total 0])
-  (cond [(number? json-data) (+ total json-data)]
+(define (remove-red json-data)
+  (cond [(number? json-data) json-data]
         [(and (hash? json-data) (not (hash-has-value? json-data "red")))
-         (+ total (sum (for/list ([v (in-hash-values json-data)]) (remove-red v total))))]
+         (for/sum ([v (in-hash-values json-data)]) (remove-red v))]
         [(list? json-data)
-         (+ total (sum (for/list ([v (in-list json-data)]) (remove-red v total))))]
-        [else total]))
+         (for/sum ([v (in-list json-data)]) (remove-red v))]
+        [else 0]))
 
 (define (main)
   (let* ([data-str (read-data)]
