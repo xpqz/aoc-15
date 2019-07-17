@@ -17,7 +17,7 @@
     (match (string-split line)
       [(list a "to" b "=" c)
        (values
-        (hash-update distances (set a b) (λ (_) (string->number c)) (λ () (string->number c)))
+        (hash-set distances (set a b) (string->number c))
         (set-union cities (set a b)))])))
 
 (define (segment-length segment distances)
