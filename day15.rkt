@@ -6,6 +6,7 @@
 ;;
 ;; Science for Hungry People
 ;;
+;; https://en.wikipedia.org/wiki/Bijection,_injection_and_surjection
 ;; https://en.wikipedia.org/wiki/Stars_and_bars_(combinatorics)
 ;; https://www.statisticshowto.datasciencecentral.com/multiset/
 ;; https://gist.github.com/rain-1/afe141d455108637654abbe1a85e5843
