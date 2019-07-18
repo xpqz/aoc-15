@@ -30,8 +30,6 @@
          [smallest (car (sort (hash-keys hist) <))])
     (hash-ref hist smallest)))
          
-    
-
 (define (main)
   (let ([data '(50 44 11 49 42 46 18 32 26 40 21 7 18 43 10 47 36 24 22 40)])
     (printf "Part1: ~a\n" (find-combination-count data 150))
