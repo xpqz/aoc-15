@@ -10,9 +10,6 @@
 
 (require math)
 
-; (for*/list ([x (in-list '(-1 0 1))] [y (in-list '(-1 0 1))] #:when (not (= x y 0)))
-;    (cons x y))
-
 (define (read-data [filename "data/input18.data"])
   (file->lines filename))
 
@@ -22,9 +19,9 @@
   
 (define (parse-data data)
   (let loop ([row 0] [lines data] [result (set)])
-    (cond [(null? lines) result]
-          [else
-           (loop (add1 row) (cdr lines) (set-union result (process-row (car lines) row)))])))
+    (if (null? lines)
+        result
+        (loop (add1 row) (cdr lines) (set-union result (process-row (car lines) row))))))
 
 (define (neighbours s x y)
   (let ([delta '((-1 . -1) (-1 . 0) (-1 . 1) (0 . -1) (0 . 1) (1 . -1) (1 . 0) (1 . 1))])
@@ -33,18 +30,18 @@
          (if (set-member? s p) 1 0))) delta))))
 
 (define (new-state pos data)
-  (let* ([x (first pos)]
-         [y (second pos)]
-         [coord (cons x y)]
-         [lit? (set-member? data coord)]
-         [n (neighbours data x y)])
+  (match-let* ([`(,x ,y) pos]
+               [coord (cons x y)]
+               [lit? (set-member? data coord)]
+               [n (neighbours data x y)])
     (cond [(and lit? (or (= n 2) (= n 3))) coord]
           [(and (not lit?) (= n 3)) coord]
           [else #f])))
 
 (define (new-state2 pos data)
-  (cond [(member pos '((0 0) (0 99) (99 0) (99 99))) (cons (first pos) (second pos))]
-        [else (new-state pos data)]))
+  (if (member pos '((0 0) (0 99) (99 0) (99 99)))
+      (cons (first pos) (second pos))
+      (new-state pos data)))
 
 (define (next-gen data statefn)
   (list->set (filter-map (λ (p) (statefn p data)) (cartesian-product (range 100) (range 100)))))
