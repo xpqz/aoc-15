@@ -54,7 +54,7 @@
                      ;;
                      ;; "Each wire can only get a signal from one source, but can provide its
                      ;;  signal to multiple destinations."
-                     (let ([new-wires (hash-update wires target (λ (v) v) (λ () gate-val))])
+                     (let ([new-wires (hash-update wires target identity (λ () gate-val))])
                        (loop (cdr gates) new-wires))]
                     [else
                      (loop (rotate gates) wires)]))])))
