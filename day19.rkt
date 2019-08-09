@@ -18,41 +18,48 @@
         [(list molecule) (cons rules molecule)]
         ['() (loop rules rst)]
         [(list target "=>" replacement) (loop (cons (cons target replacement) rules) rst)]))))
-    
-(define (apply-rule molecule key replacement)
-  (let loop ([prefix ""] [results '()] [matches (string-split molecule key #:trim? #f)])
+
+(define (apply-rule molecule target replacement)
+  (let loop ([prefix ""] [results '()] [matches (string-split molecule target #:trim? #f)])
     (match matches
       [(list _) results]
       [_ (match-let* ([(list this rest ...) matches]
-                      [tail-str (string-join rest key)]
+                      [tail-str (string-join rest target)]
                       [new-string (string-join (append `(,prefix ,this ,replacement ,tail-str)) "")]
-                      [new-prefix (string-join `(,prefix ,this ,key) "")])
+                      [new-prefix (string-join `(,prefix ,this ,target) "")])
            (loop new-prefix (cons new-string results) rest))])))
 
 (define (unique-molecules data)
-  (set-count (list->set (append-map (λ (r) (apply-rule (cdr data) (car r) (cdr r))) (car data)))))
+  (match-let ([`(,rules . ,mol) data])
+    (length (remove-duplicates
+             (append-map
+              (λ (key val) (apply-rule mol key val))
+              (map car rules)
+              (map cdr rules))))))
 
-;; Part 2: starting at "e" what's the lowest number of transformations required to get
-;; to the target molecule? We can solve this by going backwards: at each state, only
-;; rules whose replacement is present in the molecule could have been applied.
-(define (step-count rules molecule)
-  (let loop ([target molecule] [count 0])
-    (cond [(equal? target "e") count]
+(define (step-count rules start-mol)
+  ;; Find the smallest possible number of transformations needed.
+  ;;
+  ;; Apply reverse of rules in order until we get back to "e" or
+  ;; rules have no effect. If rules have no effect, inject a bit of
+  ;; randomness and try again by shuffling the rules order. This
+  ;; works under the assumption there is only one solution from
+  ;; e to target.
+  (let loop ([current start-mol] [count 0] [rules rules])
+    (cond [(equal? current "e") count]
           [else
-           (printf "target: ~a -> " target)
-           (let ([count&target
-                  (for/fold ([c 0] [s target] #:result (cons c s))
-                            ([r (in-list rules)] #:when (string-contains? target (cdr r)))
-                    (values (add1 c) (string-replace s (cdr r) (car r) #:all? #f)))])
-             (printf "~a\n" (cdr count&target))
-             (cond [(equal? target (cdr count&target))
-                    (step-count (shuffle rules) molecule)] ;; dead end. Shuffle rule-order and re-try
-                   [else
-                    (loop  (cdr count&target) (+ count (car count&target)))]))])))
-                 
+           (define-values (c txn)
+             (for/fold ([c 0] [sample current])
+                       ([(from to) (in-parallel (map car rules) (map cdr rules))])
+               (values (+ c (length (regexp-match* to sample))) (string-replace sample to from))))
+
+           (cond [(equal? current txn) (loop start-mol 0 (shuffle rules))]
+                 [else
+                  (loop txn (+ count c) rules)])])))
+
 (define (main)
-  (let ([data (parse-data (read-data "data/test.data"))])
+  (let* ([data (parse-data (read-data))])
     (printf "Part1: ~a\n" (unique-molecules data))
     (printf "Part2: ~a\n" (step-count (car data) (cdr data)))))
     
-;(main)
+(main)
