@@ -11,14 +11,19 @@
 
 (require math)
 
-(define (presents house)
+(define (part1 house)
   (* 10 (divisor-sum house)))
 
-(define (part1 target)
+(define (part2 house)
+  (* 11 (for/sum ([elf (in-list (divisors house))])
+          (if (<= house (* 50 elf)) elf 0))))
+                          
+(define (find-house target presfn)
   (for/first ([house (in-naturals 1)]
-              #:when (>= (presents house) target)) house))
+              #:when (>= (presfn house) target)) house))
 
 (define (main)
-  (printf "Part1: ~a\n" (part1 29000000)))
+  (printf "Part1: ~a\n" (find-house 29000000 part1))
+  (printf "Part2: ~a\n" (find-house 29000000 part2)))
 
 (main)
